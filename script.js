@@ -1,0 +1,1 @@
+// const imgSrc = `data:image/png;base64,${base64Data}`;
