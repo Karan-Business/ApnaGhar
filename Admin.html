@@ -70,23 +70,54 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
-    document.getElementById("propertyImageData").addEventListener("change", function (event) {
-        const file = event.target.files[0]; // Get the selected file
 
+<script>
+    async function uploadToImgur(base64Image) {
+        const CLIENT_ID = "e48aa033f68678f"; // Replace with your actual Imgur Client ID
+    
+        try {
+            const response = await fetch("https://api.imgur.com/3/image", {
+                method: "POST",
+                headers: {
+                    Authorization: `Client-ID ${CLIENT_ID}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ image: base64Image, type: "base64" })
+            });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                console.log("Uploaded Image URL:", data.data.link);
+                return data.data.link;
+            } else {
+                console.error("Imgur Error:", data);
+                return null;
+            }
+        } catch (error) {
+            console.error("Upload Error:", error);
+            return null;
+        }
+    }
+    
+    document.getElementById("propertyImageData").addEventListener("change", function (event) {
+        const file = event.target.files[0];
+    
         if (file) {
             const reader = new FileReader();
-
-            // Convert the image file to a Base64 string
-            reader.onload = function (e) {
-                const base64Image = e.target.result.split(",")[1]; // Remove the data URL prefix
-                document.getElementById("propertyImage").value = base64Image; // Set the hidden field value
+    
+            reader.onload = async function (e) {
+                const base64Image = e.target.result.split(",")[1]; // Remove prefix
+                const imageUrl = await uploadToImgur(base64Image); // Upload to Imgur
+    
+                if (imageUrl) {
+                    document.getElementById("propertyImage").value = imageUrl; // Store the link
+                }
             };
-
-            reader.readAsDataURL(file); // Read the file as a Base64 string
+    
+            reader.readAsDataURL(file);
         }
     });
-</script>
-
+    </script>
 </body>
 </html>
